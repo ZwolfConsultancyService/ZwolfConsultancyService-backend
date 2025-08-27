@@ -38,8 +38,8 @@ app.use(cors({
     
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:5173',
-      'https://zwolfconsultancyservice-blog-dashboard.onrender.com', // Development frontend
-      
+      'https://zwolfconsultancyservice-blog-dashboard.onrender.com',
+      'https://zwolfconsultancyservice.onrender.com'
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
