@@ -38,9 +38,8 @@ app.use(cors({
     
     const allowedOrigins = [
       process.env.FRONTEND_URL || 'http://localhost:5173',
-      'https://sunrisedahsboard.onrender.com', // Development frontend
-      'https://sunrisefrontend-5222.onrender.com',
-      'http://localhost:5173',
+      'https://zwolfconsultancyservice-blog-dashboard.onrender.com', // Development frontend
+      
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
