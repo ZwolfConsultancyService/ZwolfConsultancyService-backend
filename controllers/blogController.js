@@ -1,7 +1,7 @@
 const Blog = require('../models/Blog');
 const { validationResult } = require('express-validator');
 const ImageKit = require('imagekit');
-
+  
 // Initialize ImageKit
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,

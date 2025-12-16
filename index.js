@@ -9,6 +9,9 @@ const compression = require('compression');
 const morgan = require('morgan');
 require('dotenv').config();
 
+// Import database config
+const connectDB = require('./config/db');
+
 // Import routes
 const blogRoutes = require('./routes/blogRoutes');
 const errorHandler = require('./middlewares/errorHandler');
@@ -40,8 +43,8 @@ app.use(cors({
       process.env.FRONTEND_URL || 'http://localhost:5173',
       'https://zwolfconsultancyservice-blog-dashboard.onrender.com',
       'https://zwolfconsultancyservice.onrender.com'
-    ];
-    
+    ];  
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -56,13 +59,13 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000, // More lenient in development
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
   message: {
     error: 'Too many requests from this IP, please try again later.',
-    retryAfter: 15 * 60 // 15 minutes in seconds
+    retryAfter: 15 * 60
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 app.use('/api/', limiter);
 
@@ -91,7 +94,7 @@ app.use(mongoSanitize({
 
 // Prevent HTTP Parameter Pollution attacks
 app.use(hpp({
-  whitelist: ['tags', 'categories'] // Allow arrays for these parameters
+  whitelist: ['tags', 'categories']
 }));
 
 // Compression middleware
@@ -102,7 +105,7 @@ app.use(compression({
     }
     return compression.filter(req, res);
   },
-  threshold: 1024 // Only compress responses larger than 1KB
+  threshold: 1024
 }));
 
 // Logging middleware
@@ -153,63 +156,6 @@ app.use('*', (req, res) => {
     }
   });
 });
-
-// Database connection with retry logic
-const connectDB = async () => {
-  try {
-    const mongoURI = process.env.MONGODB_URI;
-    
-    if (!mongoURI) {
-      throw new Error('MONGODB_URI environment variable is not defined');
-    }
-
-    // ✅ Updated connection options for Mongoose 8.x (removed deprecated options)
-    const conn = await mongoose.connect(mongoURI, {
-      // Remove these deprecated options:
-      // useNewUrlParser: true,        // ❌ Deprecated in Mongoose 8.x
-      // useUnifiedTopology: true,     // ❌ Deprecated in Mongoose 8.x
-      // bufferMaxEntries: 0           // ❌ Not supported in Mongoose 8.x
-      
-      // Keep only these supported options:
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      bufferCommands: false, // Disable mongoose buffering
-      retryWrites: true, // Retry writes automatically
-      w: 'majority' // Write concern for MongoDB Atlas
-    });
-
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Database: ${conn.connection.name}`);
-    
-    // Handle connection events
-    mongoose.connection.on('error', (err) => {
-      console.error('❌ MongoDB connection error:', err);
-    });
-
-    mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️ MongoDB disconnected');
-    });
-
-    mongoose.connection.on('reconnected', () => {
-      console.log('✅ MongoDB reconnected');
-    });
-
-  } catch (error) {
-    console.error('❌ MongoDB connection failed:', error.message);
-    
-    // More detailed error logging for Atlas connection issues
-    if (error.message.includes('ENOTFOUND')) {
-      console.error('🔍 Check your MongoDB Atlas cluster URL');
-    } else if (error.message.includes('authentication failed')) {
-      console.error('🔐 Check your MongoDB Atlas username and password');
-    } else if (error.message.includes('IP not in whitelist')) {
-      console.error('🌐 Check your MongoDB Atlas Network Access settings');
-    }
-    
-    process.exit(1);
-  }
-};
 
 // Graceful shutdown
 const gracefulShutdown = () => {
