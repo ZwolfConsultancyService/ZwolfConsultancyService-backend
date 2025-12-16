@@ -1,5 +1,9 @@
+const multer = require('multer');
+
 const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
 
   // Mongoose validation error
   if (err.name === 'ValidationError') {
@@ -28,7 +32,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Multer file upload errors
+  // Multer errors
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(413).json({
@@ -42,7 +46,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Image upload errors
+  // Custom image type error
   if (err.message === 'Only image files are allowed') {
     return res.status(400).json({
       success: false,
@@ -50,7 +54,7 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Default error
+  // Default fallback
   res.status(err.statusCode || 500).json({
     success: false,
     message: err.message || 'Internal Server Error'
