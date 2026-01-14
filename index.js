@@ -203,7 +203,7 @@
   });
 
   // Start server
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 8000;
   let server;
 
   const startServer = async () => {
