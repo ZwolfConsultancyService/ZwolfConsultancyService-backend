@@ -44,11 +44,6 @@ const blogValidation = [
     .isLength({ min: 1, max: 50 })
     .withMessage('Each tag must be between 1 and 50 characters')
 ];
-
-// IMPORTANT: Static routes MUST come before dynamic routes
-// Otherwise Express will try to match 'fetch' as an ID parameter
-
-// Static routes first
 router.get('/fetch', blogController.getAllBlogs);
 router.get('/tags', blogController.getTags);
 router.get('/authors', blogController.getAuthors);
