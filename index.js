@@ -311,7 +311,7 @@ app.use(
         
         // Development
         process.env.FRONTEND_URL || "http://localhost:5173",
-        "http://localhost:3000",
+        "http://localhost:3000","http://localhost:5174",
         
         // Render deployments (if any)
         "https://zwolfconsultancyservice-blog-dashboard.onrender.com",
